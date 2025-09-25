@@ -19,15 +19,17 @@ const Expenses: React.FC = () => {
     
     const [form, setForm] = useState(initialFormState);
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+    const [error, setError] = useState<string>('');
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
         if (!form.date || !form.category || !form.amount || !form.description || !form.locationId) {
-            alert('Por favor, completa todos los campos.');
+            setError('Por favor, completa todos los campos.');
             return;
         }
 
@@ -40,7 +42,11 @@ const Expenses: React.FC = () => {
             locationId: form.locationId
         };
         
-        saveExpense(newExpense);
+        const { error: saveError } = await saveExpense(newExpense);
+        if (saveError) {
+            setError('Error al guardar en Supabase: ' + saveError.message);
+            return;
+        }
         setEditingExpense(null);
         setForm(initialFormState);
     };
@@ -66,7 +72,6 @@ const Expenses: React.FC = () => {
     };
 
     const visibleExpenses = useMemo(() => {
-        // Fix: Check if 'roles' array includes UserRole.ADMIN instead of checking non-existent 'role' property.
         if (currentUser?.roles.includes(UserRole.ADMIN)) {
             return expenses;
         }
@@ -83,6 +88,7 @@ const Expenses: React.FC = () => {
                         {editingExpense ? 'Editar Gasto' : 'Registrar Nuevo Gasto'}
                     </h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {error && <div className="text-red-500 text-center">{error}</div>}
                         <div>
                             <label htmlFor="date" className="block text-sm text-gray-400">Fecha</label>
                             <input type="date" id="date" name="date" value={form.date} onChange={handleInputChange} className="w-full mt-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md" required />
@@ -106,7 +112,6 @@ const Expenses: React.FC = () => {
                             <label htmlFor="description" className="block text-sm text-gray-400">Descripción</label>
                             <textarea id="description" name="description" value={form.description} onChange={handleInputChange} rows={3} className="w-full mt-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md" required />
                         </div>
-                        {/* Fix: Check if 'roles' array includes UserRole.ADMIN instead of checking non-existent 'role' property. */}
                         {currentUser?.roles.includes(UserRole.ADMIN) && (
                             <div>
                                 <label htmlFor="locationId" className="block text-sm text-gray-400">Ubicación</label>
@@ -135,7 +140,6 @@ const Expenses: React.FC = () => {
                                     <th scope="col" className="px-6 py-3">Fecha</th>
                                     <th scope="col" className="px-6 py-3">Descripción</th>
                                     <th scope="col" className="px-6 py-3">Monto</th>
-                                    {/* Fix: Check if 'roles' array includes UserRole.ADMIN instead of checking non-existent 'role' property. */}
                                     {currentUser?.roles.includes(UserRole.ADMIN) && <th scope="col" className="px-6 py-3">Ubicación</th>}
                                     <th scope="col" className="px-6 py-3">Acciones</th>
                                 </tr>
@@ -146,7 +150,6 @@ const Expenses: React.FC = () => {
                                         <td className="px-6 py-4">{new Date(exp.date).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 font-medium text-white">{exp.description} <span className="block text-xs text-gray-500">{exp.category}</span></td>
                                         <td className="px-6 py-4">${exp.amount.toFixed(2)}</td>
-                                        {/* Fix: Check if 'roles' array includes UserRole.ADMIN instead of checking non-existent 'role' property. */}
                                         {currentUser?.roles.includes(UserRole.ADMIN) && <td className="px-6 py-4">{locations.find(l=>l.id === exp.locationId)?.name || 'N/A'}</td>}
                                         <td className="px-6 py-4 flex gap-4">
                                             <button onClick={() => handleEdit(exp)} className="text-emerald-400 hover:underline">Editar</button>
