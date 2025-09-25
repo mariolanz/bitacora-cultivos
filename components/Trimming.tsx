@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 // FIX: Remove non-existent useUsers hook and import useTrimming
-import { useAuth, useCrops, useConfirmation, useTrimming, useLocations } from '../context/AppProvider';
+import { useAuth, useCrops, useConfirmation, useTrimming, useLocations } from "../src/context/AppProvider";
 import Card from './ui/Card';
 import { Crop, CropStage, TrimmingSession } from '../types';
 
