@@ -48,7 +48,9 @@ const Expenses: React.FC = () => {
             locationId: form.locationId
         };
         
-        const { error: saveError } = await saveExpense(newExpense);
+        // FIX: No destructures directly, always check result
+        const result = await saveExpense(newExpense);
+        const saveError = result?.error;
         if (saveError) {
             setError('Error al guardar en Supabase: ' + saveError.message);
             return;
