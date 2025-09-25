@@ -20,6 +20,7 @@ const Expenses: React.FC = () => {
     const [form, setForm] = useState(initialFormState);
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
     const [error, setError] = useState<string>('');
+    const [success, setSuccess] = useState<string>('');
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -28,8 +29,13 @@ const Expenses: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setSuccess('');
         if (!form.date || !form.category || !form.amount || !form.description || !form.locationId) {
             setError('Por favor, completa todos los campos.');
+            return;
+        }
+        if (isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
+            setError('El monto debe ser un número positivo.');
             return;
         }
 
@@ -49,6 +55,8 @@ const Expenses: React.FC = () => {
         }
         setEditingExpense(null);
         setForm(initialFormState);
+        setSuccess('¡Gasto guardado correctamente!');
+        setTimeout(() => setSuccess(''), 2000);
     };
 
     const handleEdit = (expense: Expense) => {
@@ -89,6 +97,7 @@ const Expenses: React.FC = () => {
                     </h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && <div className="text-red-500 text-center">{error}</div>}
+                        {success && <div className="text-green-400 text-center">{success}</div>}
                         <div>
                             <label htmlFor="date" className="block text-sm text-gray-400">Fecha</label>
                             <input type="date" id="date" name="date" value={form.date} onChange={handleInputChange} className="w-full mt-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md" required />
