@@ -12,6 +12,11 @@ import { useSupabaseInventory } from '../hooks/useSupabaseInventory';
 import { useSupabaseFormulas } from '../hooks/useSupabaseFormulas';
 import { useSupabaseExpenses } from '../hooks/useSupabaseExpenses';
 import { useSupabaseMaintenanceLogs } from '../hooks/useSupabaseMaintenanceLogs';
+import { useSupabaseGenetics } from '../hooks/useSupabaseGenetics';
+import { useSupabaseLocations } from '../hooks/useSupabaseLocations';
+import { useSupabaseTasks } from '../hooks/useSupabaseTasks';
+import { useSupabaseNotifications } from '../hooks/useSupabaseNotifications';
+import { useSupabaseAnnouncements } from '../hooks/useSupabaseAnnouncements';
 
 // ... (resto de interfaces y contextos igual que antes)
 
@@ -29,51 +34,58 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const { formulas, saveFormula, deleteFormula } = useSupabaseFormulas();
   const { expenses, saveExpense, deleteExpense } = useSupabaseExpenses();
   const { maintenanceLogs, saveMaintenanceLog } = useSupabaseMaintenanceLogs();
+  const { genetics } = useSupabaseGenetics();
+  const { locations } = useSupabaseLocations();
+  const { tasks } = useSupabaseTasks();
+  const { notifications, addNotification, markAsRead } = useSupabaseNotifications(currentUser?.id);
+  const { announcements, addAnnouncement, markAnnouncementAsRead } = useSupabaseAnnouncements(currentUser?.locationId);
 
-  // Las siguientes entidades pueden seguir en localStorage o migrarse después:
-  const [genetics, setGenetics] = React.useState<Genetics[]>(D.GENETICS);
-  const [locations, setLocations] = React.useState<Location[]>(D.LOCATIONS);
-  const [tasks, setTasks] = React.useState<Task[]>(D.TASKS);
-  const [notifications, setNotifications] = React.useState<Notification[]>([]);
-  const [announcements, setAnnouncements] = React.useState<Announcement[]>([]);
+  // Confirmación local (puede quedarse igual)
   const [confirmation, setConfirmation] = useState<{ isOpen: boolean; message: string; onConfirm: (() => void) | null }>({ isOpen: false, message: '', onConfirm: null });
 
-  // ... (resto de lógica de usuarios, roles, confirmaciones, etc. igual que antes)
-
-  // Métodos CRUD para Supabase (ya están en los hooks)
-  // Ejemplo de uso en componentes:
-  // const { crops, saveCrop, deleteCrop } = useSupabaseCrops();
-
-  // El resto de métodos (notificaciones, anuncios, confirmaciones, etc.) igual que antes
-
-  // Value objects para los contextos (solo muestro crops como ejemplo, repite para los demás)
-  const cropValue = { allCrops, saveCrop, deleteCrop /* ...otros métodos si los necesitas */ };
+  // Value objects para los contextos
+  const cropValue = { allCrops, saveCrop, deleteCrop };
   const plantBatchValue = { plantBatches, savePlantBatch, deletePlantBatch };
   const motherPlantValue = { motherPlants, saveMotherPlant, deleteMotherPlant };
   const inventoryValue = { inventory, saveInventoryItem, deleteInventoryItem };
   const formulaValue = { formulas, saveFormula, deleteFormula };
   const expenseValue = { expenses, saveExpense, deleteExpense };
   const maintenanceLogValue = { maintenanceLogs, saveMaintenanceLog };
-
-  // ... (resto de value objects igual que antes)
+  const geneticsValue = { genetics, saveGenetic: () => {}, deleteGenetic: () => {} }; // Puedes implementar saveGenetic/deleteGenetic si lo necesitas
+  const locationValue = { locations, saveLocation: () => {}, deleteLocation: () => {} }; // Puedes implementar saveLocation/deleteLocation si lo necesitas
+  const taskValue = { tasks, saveTask: () => {}, deleteTask: () => {}, completeTaskForCrop: () => {}, completeMaintenanceTask: () => {} };
+  const notificationValue = { notifications, addNotification, markAsRead, unreadCount: notifications.filter(n => !n.read).length };
+  const announcementValue = { announcements, addAnnouncement, markAnnouncementAsRead };
+  const confirmationValue = { showConfirmation: (message: string, onConfirm: () => void) => setConfirmation({ isOpen: true, message, onConfirm }) };
 
   return (
     <AuthContext.Provider value={{ users, currentUser, login: () => null, logout: () => {}, createUser: () => {}, deleteUser: () => {}, saveUser: () => {}, activeRole, setActiveRole }}>
       <CropContext.Provider value={cropValue}>
         <PlantBatchContext.Provider value={plantBatchValue}>
           <MotherPlantContext.Provider value={motherPlantValue}>
-            <GeneticsContext.Provider value={{ genetics, saveGenetic: () => {}, deleteGenetic: () => {} }}>
-              <LocationContext.Provider value={{ locations, saveLocation: () => {}, deleteLocation: () => {} }}>
-                <TaskContext.Provider value={{ tasks, saveTask: () => {}, deleteTask: () => {}, completeTaskForCrop: () => {}, completeMaintenanceTask: () => {} }}>
+            <GeneticsContext.Provider value={geneticsValue}>
+              <LocationContext.Provider value={locationValue}>
+                <TaskContext.Provider value={taskValue}>
                   <MaintenanceLogContext.Provider value={maintenanceLogValue}>
                     <InventoryContext.Provider value={inventoryValue}>
                       <FormulaContext.Provider value={formulaValue}>
                         <ExpenseContext.Provider value={expenseValue}>
-                          <NotificationContext.Provider value={{ notifications, addNotification: () => {}, markAsRead: () => {}, unreadCount: 0 }}>
-                            <AnnouncementContext.Provider value={{ announcements, addAnnouncement: () => {}, markAnnouncementAsRead: () => {} }}>
-                              <ConfirmationContext.Provider value={{ showConfirmation: () => {} }}>
+                          <NotificationContext.Provider value={notificationValue}>
+                            <AnnouncementContext.Provider value={announcementValue}>
+                              <ConfirmationContext.Provider value={confirmationValue}>
                                 {children}
-                                {/* ...modal de confirmación igual que antes */}
+                                {confirmation.isOpen && (
+                                  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                                    <div className="bg-gray-800 rounded-lg p-6 shadow-xl max-w-sm mx-auto">
+                                      <h3 className="text-lg font-bold mb-4">Confirmar Acción</h3>
+                                      <p className="text-gray-300 mb-6">{confirmation.message}</p>
+                                      <div className="flex justify-end gap-4">
+                                        <button onClick={() => setConfirmation({ isOpen: false, message: '', onConfirm: null })} className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700">Cancelar</button>
+                                        <button onClick={() => { confirmation.onConfirm && confirmation.onConfirm(); setConfirmation({ isOpen: false, message: '', onConfirm: null }); }} className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white">Confirmar</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
                               </ConfirmationContext.Provider>
                             </AnnouncementContext.Provider>
                           </NotificationContext.Provider>
