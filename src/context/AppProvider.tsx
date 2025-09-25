@@ -34,9 +34,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const { formulas, saveFormula, deleteFormula } = useSupabaseFormulas();
   const { expenses, saveExpense, deleteExpense } = useSupabaseExpenses();
   const { maintenanceLogs, saveMaintenanceLog } = useSupabaseMaintenanceLogs();
-  const { genetics } = useSupabaseGenetics();
-  const { locations } = useSupabaseLocations();
-  const { tasks } = useSupabaseTasks();
+  const { genetics, saveGenetic, deleteGenetic } = useSupabaseGenetics();
+  const { locations, saveLocation, deleteLocation } = useSupabaseLocations();
+  const { tasks, saveTask, deleteTask } = useSupabaseTasks();
   const { notifications, addNotification, markAsRead } = useSupabaseNotifications(currentUser?.id);
   const { announcements, addAnnouncement, markAnnouncementAsRead } = useSupabaseAnnouncements(currentUser?.locationId);
 
@@ -44,12 +44,91 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [confirmation, setConfirmation] = useState<{ isOpen: boolean; message: string; onConfirm: (() => void) | null }>({ isOpen: false, message: '', onConfirm: null });
 
   // Value objects para los contextos
-  const cropValue = { allCrops, saveCrop, deleteCrop };
-  const plantBatchValue = { plantBatches, savePlantBatch, deletePlantBatch };
-  const motherPlantValue = { motherPlants, saveMotherPlant, deleteMotherPlant };
-  const inventoryValue = { inventory, saveInventoryItem, deleteInventoryItem };
-  const formulaValue = { formulas, saveFormula, deleteFormula };
-  // --- FIX: Asegura que saveExpense y deleteExpense siempre retornen { error }
+  const cropValue = {
+    allCrops,
+    saveCrop: async (crop) => {
+      if (typeof saveCrop === 'function') {
+        const result = await saveCrop(crop);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    deleteCrop: async (id) => {
+      if (typeof deleteCrop === 'function') {
+        const result = await deleteCrop(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
+  const plantBatchValue = {
+    plantBatches,
+    savePlantBatch: async (batch) => {
+      if (typeof savePlantBatch === 'function') {
+        const result = await savePlantBatch(batch);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    deletePlantBatch: async (id) => {
+      if (typeof deletePlantBatch === 'function') {
+        const result = await deletePlantBatch(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
+  const motherPlantValue = {
+    motherPlants,
+    saveMotherPlant: async (plant) => {
+      if (typeof saveMotherPlant === 'function') {
+        const result = await saveMotherPlant(plant);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    deleteMotherPlant: async (id) => {
+      if (typeof deleteMotherPlant === 'function') {
+        const result = await deleteMotherPlant(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
+  const inventoryValue = {
+    inventory,
+    saveInventoryItem: async (item) => {
+      if (typeof saveInventoryItem === 'function') {
+        const result = await saveInventoryItem(item);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    deleteInventoryItem: async (id) => {
+      if (typeof deleteInventoryItem === 'function') {
+        const result = await deleteInventoryItem(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
+  const formulaValue = {
+    formulas,
+    saveFormula: async (formula) => {
+      if (typeof saveFormula === 'function') {
+        const result = await saveFormula(formula);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    deleteFormula: async (id) => {
+      if (typeof deleteFormula === 'function') {
+        const result = await deleteFormula(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
   const expenseValue = {
     expenses,
     saveExpense: async (expense) => {
@@ -67,12 +146,104 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return { error: undefined };
     }
   };
-  const maintenanceLogValue = { maintenanceLogs, saveMaintenanceLog };
-  const geneticsValue = { genetics, saveGenetic: () => {}, deleteGenetic: () => {} }; // Puedes implementar saveGenetic/deleteGenetic si lo necesitas
-  const locationValue = { locations, saveLocation: () => {}, deleteLocation: () => {} }; // Puedes implementar saveLocation/deleteLocation si lo necesitas
-  const taskValue = { tasks, saveTask: () => {}, deleteTask: () => {}, completeTaskForCrop: () => {}, completeMaintenanceTask: () => {} };
-  const notificationValue = { notifications, addNotification, markAsRead, unreadCount: notifications.filter(n => !n.read).length };
-  const announcementValue = { announcements, addAnnouncement, markAnnouncementAsRead };
+  const maintenanceLogValue = {
+    maintenanceLogs,
+    saveMaintenanceLog: async (log) => {
+      if (typeof saveMaintenanceLog === 'function') {
+        const result = await saveMaintenanceLog(log);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
+  const geneticsValue = {
+    genetics,
+    saveGenetic: async (genetic) => {
+      if (typeof saveGenetic === 'function') {
+        const result = await saveGenetic(genetic);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    deleteGenetic: async (id) => {
+      if (typeof deleteGenetic === 'function') {
+        const result = await deleteGenetic(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
+  const locationValue = {
+    locations,
+    saveLocation: async (location) => {
+      if (typeof saveLocation === 'function') {
+        const result = await saveLocation(location);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    deleteLocation: async (id) => {
+      if (typeof deleteLocation === 'function') {
+        const result = await deleteLocation(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
+  const taskValue = {
+    tasks,
+    saveTask: async (task) => {
+      if (typeof saveTask === 'function') {
+        const result = await saveTask(task);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    deleteTask: async (id) => {
+      if (typeof deleteTask === 'function') {
+        const result = await deleteTask(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    completeTaskForCrop: () => {},
+    completeMaintenanceTask: () => {}
+  };
+  const notificationValue = {
+    notifications,
+    addNotification: async (notification) => {
+      if (typeof addNotification === 'function') {
+        const result = await addNotification(notification);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    markAsRead: async (id) => {
+      if (typeof markAsRead === 'function') {
+        const result = await markAsRead(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    unreadCount: notifications.filter(n => !n.read).length
+  };
+  const announcementValue = {
+    announcements,
+    addAnnouncement: async (announcement) => {
+      if (typeof addAnnouncement === 'function') {
+        const result = await addAnnouncement(announcement);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    markAnnouncementAsRead: async (id) => {
+      if (typeof markAnnouncementAsRead === 'function') {
+        const result = await markAnnouncementAsRead(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
   const confirmationValue = { showConfirmation: (message: string, onConfirm: () => void) => setConfirmation({ isOpen: true, message, onConfirm }) };
 
   return (
