@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useTasks, useAuth, useInventory, useMaintenanceLogs } from '../context/AppProvider';
-import Card from './ui/Card';
+import { useTasks, useAuth, useInventory, useMaintenanceLogs } from "../src/context/AppProvider";
+import Card from "./ui/Card";
 import { Task } from '../types';
 import MaintenanceTaskModal from './MaintenanceTaskModal';
 
