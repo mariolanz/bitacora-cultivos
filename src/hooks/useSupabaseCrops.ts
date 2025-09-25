@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Crop } from '../types';
-import supabase from '../integrations/supabase/client';
+import { supabase } from '../integrations/supabase/client';
 
 export function useSupabaseCrops() {
   const [crops, setCrops] = useState<Crop[]>([]);
@@ -8,13 +8,31 @@ export function useSupabaseCrops() {
 
   // Leer cultivos al iniciar
   useEffect(() => {
+    let ignore = false;
     async function fetchCrops() {
       setLoading(true);
       const { data, error } = await supabase.from('crops').select('*');
-      if (!error && data) setCrops(data as Crop[]);
+      if (!error && data && !ignore) setCrops(data as Crop[]);
       setLoading(false);
     }
     fetchCrops();
+
+    // Suscripción en tiempo real
+    const channel = supabase
+      .channel('realtime-crops')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'crops' },
+        (payload) => {
+          fetchCrops();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      ignore = true;
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Crear o actualizar cultivo
@@ -22,22 +40,14 @@ export function useSupabaseCrops() {
     const { data, error } = await supabase
       .from('crops')
       .upsert([crop], { onConflict: 'id' });
-    if (!error && data) setCrops(prev => {
-      const idx = prev.findIndex(c => c.id === crop.id);
-      if (idx > -1) {
-        const newArr = [...prev];
-        newArr[idx] = crop;
-        return newArr;
-      }
-      return [...prev, crop];
-    });
+    // No actualizamos localmente, el canal lo hará
     return { data, error };
   }
 
   // Eliminar cultivo
   async function deleteCrop(id: string) {
     const { error } = await supabase.from('crops').delete().eq('id', id);
-    if (!error) setCrops(prev => prev.filter(c => c.id !== id));
+    // No actualizamos localmente, el canal lo hará
     return { error };
   }
 
