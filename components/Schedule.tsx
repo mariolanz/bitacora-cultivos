@@ -1,10 +1,8 @@
-
-
 import React, { useMemo } from 'react';
-import { useCrops, useLocations, useAuth } from '../context/AppProvider';
-import { getStageInfo } from '../services/nutritionService';
-import Card from './ui/Card';
-import { CropStage, UserRole } from '../types';
+import { useCrops, useLocations, useAuth } from "../src/context/AppProvider";
+import { getStageInfo } from "../services/nutritionService";
+import Card from "./ui/Card";
+import { CropStage, UserRole } from "../types";
 
 const stageDisplayMap: Record<CropStage, { abbr: string; color: string }> = {
     [CropStage.CLONING]: { abbr: 'clone', color: 'bg-yellow-800' },
