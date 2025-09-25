@@ -1,8 +1,9 @@
+
 import React, { useState, useMemo, useRef } from 'react';
 import Card from './ui/Card';
-import { useMotherPlants, useGenetics, useLocations, useConfirmation, useAuth } from "../src/context/AppProvider";
-import { UserRole } from "../types";
-import { useNavigate } from "react-router-dom";
+import { useMotherPlants, useGenetics, useLocations, useConfirmation, useAuth } from '../context/AppProvider';
+import { MotherPlant, UserRole } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 const MotherPlants: React.FC = () => {
     const { motherPlants, saveMotherPlant, archiveMotherPlant, restoreMotherPlant, deleteMotherPlant, setActiveMotherPlantId } = useMotherPlants();

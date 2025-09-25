@@ -1,8 +1,8 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-// Cambiado: ahora importa el AppProvider de src/context/AppProvider.tsx
-import { AppProvider } from './src/context/AppProvider';
+import { AppProvider } from './context/AppProvider';
 import { HashRouter } from 'react-router-dom';
 
 const rootElement = document.getElementById('root');

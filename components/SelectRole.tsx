@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAuth } from '../src/context/AppProvider';
+import { useAuth } from '../context/AppProvider';
 import { useNavigate } from 'react-router-dom';
 import Card from './ui/Card';
 import { UserRole } from '../types';
