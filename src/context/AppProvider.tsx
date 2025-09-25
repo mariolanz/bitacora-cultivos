@@ -49,7 +49,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const motherPlantValue = { motherPlants, saveMotherPlant, deleteMotherPlant };
   const inventoryValue = { inventory, saveInventoryItem, deleteInventoryItem };
   const formulaValue = { formulas, saveFormula, deleteFormula };
-  const expenseValue = { expenses, saveExpense, deleteExpense };
+  // --- FIX: Asegura que saveExpense y deleteExpense siempre retornen { error }
+  const expenseValue = {
+    expenses,
+    saveExpense: async (expense) => {
+      if (typeof saveExpense === 'function') {
+        const result = await saveExpense(expense);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    },
+    deleteExpense: async (id) => {
+      if (typeof deleteExpense === 'function') {
+        const result = await deleteExpense(id);
+        if (result && typeof result === 'object' && 'error' in result) return result;
+      }
+      return { error: undefined };
+    }
+  };
   const maintenanceLogValue = { maintenanceLogs, saveMaintenanceLog };
   const geneticsValue = { genetics, saveGenetic: () => {}, deleteGenetic: () => {} }; // Puedes implementar saveGenetic/deleteGenetic si lo necesitas
   const locationValue = { locations, saveLocation: () => {}, deleteLocation: () => {} }; // Puedes implementar saveLocation/deleteLocation si lo necesitas
